@@ -84,5 +84,5 @@ def pcky(words: List[str], grammar: Dict[Tuple[str, str], float]):
                                     table[i][j][g[0]] = grammar[g] * prob_b * prob_c
                                     back[i][j][g[0]] = {k, b, c}
 
-    return table[1][len(words)] # here is a bug
+    return table[1][len(words)-1]
 
