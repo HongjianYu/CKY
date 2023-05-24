@@ -17,7 +17,7 @@ def cky(words: List[str], grammar: Dict[str, List]):
             if words[j] in grammar[g]: # find lexicon in grammar
                 table[j-1][j].add(g)
 
-        for i in range(j-2, j):
+        for i in range(j-2, -1, -1):
             for k in range(i+1, j-1):
                 b, c = table[i][k], table[k][j]
                 bc = str(b + ' ' + c) # eg. "Det N"
