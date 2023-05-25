@@ -93,6 +93,7 @@ class Node:
             out += f"{self.children[i][1]}"
         return f"[{out}]"
 
+
 def parse_table(table: List[List], grammar: Dict[str, List]):
     """
     table from cky
@@ -104,6 +105,7 @@ def parse_table(table: List[List], grammar: Dict[str, List]):
         parsing(roots[-1], table, grammar)
 
     return roots
+
 
 def parsing(root: Node, table: List[List], grammar: Dict[str, List]):
     for k in range(root.pos[0]+1, root.pos[1]):
@@ -117,9 +119,10 @@ def parsing(root: Node, table: List[List], grammar: Dict[str, List]):
                     parsing(root.children[-1][0], table, grammar)
                     parsing(root.children[-1][1], table, grammar)
 
+
 def cfg_to_dict(pcfg):
     cfg_dict = {}
-    cfg_data = open("grammar.txt")
+    cfg_data = open("pcfg.txt")
     cfg_lines = cfg_data.readlines()
     for line in cfg_lines:
         line = line.strip()
@@ -168,12 +171,13 @@ def main():
     if use_pcky:
         table = pcky(words, cfg_dict)
     else:
-        table = cky([0, 'b', 'a', 'a', 'b', 'a'], cfg_dict)
+        table = cky(words, cfg_dict)
     print_table(table)
 
-    roots = parse_table(cky([0, 'b', 'a', 'a', 'b', 'a'], cfg_dict), cfg_dict)
+    roots = parse_table(cky(words, cfg_dict), cfg_dict)
     for root in roots:
         print(root)
+
 
 if __name__ == "__main__":
     main()
