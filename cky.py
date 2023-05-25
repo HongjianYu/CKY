@@ -62,10 +62,27 @@ def pcky(words: List[str], grammar: Dict[Tuple[str, str], float]):
                                 if g[1] == str(b + " " + c):
                                     if table[i][j].get(g[0]) is None or table[i][j].get(g[0]) < grammar[g] * p_b * p_c:
                                         table[i][j][g[0]] = grammar[g] * p_b * p_c
-                                        back[i][j][g[0]] = {k, b, c}
+                                        back[i][j][g[0]] = (k, b, c)
 
-    # return table[1][len(words)-1]
-    return table
+    return table, back
+
+
+def backtrack(back: List[List]):
+    print_list = [[] for _ in range(len(back))]
+    backtrack_trace(print_list, back, (0, len(back), 'S'), 0)
+    for row in print_list:
+        print(row)
+
+
+def backtrack_trace(print_list: List, back: List[List], position, depth):
+    i, j, s = position
+    if back[i][j].get(s) is None:
+        print_list[depth].append(s)
+    else:
+        print_list[depth].append(s)
+        k, b, c = back[i][j][s]
+        backtrack_trace(print_list, back, (i, k, b), depth + 1)
+        backtrack_trace(print_list, back, (k, j, c), depth + 1)
 
 
 def print_table(table: List[List]):
@@ -162,21 +179,25 @@ def senstence_to_words(sentence: str) -> List:
 
 
 def main():
-    use_pcky = False
+    use_pcky = True
     cfg_dict = cfg_to_dict(use_pcky)
     print(cfg_dict, end="\n\n")
     sentence = "I book the dinner on the flight to Houston."
     words = senstence_to_words(sentence)
     print(words, end="\n\n")
     if use_pcky:
-        table = pcky(words, cfg_dict)
+        table, back = pcky(words, cfg_dict)
     else:
         table = cky(words, cfg_dict)
     print_table(table)
 
-    roots = parse_table(cky(words, cfg_dict), cfg_dict)
-    for root in roots:
-        print(root)
+    print_table(back)
+    print(f"Parse probability: {table[0][len(table)]}")
+    backtrack(back)
+
+    # roots = parse_table(cky(words, cfg_dict), cfg_dict)
+    # for root in roots:
+    #     print(root)
 
 
 if __name__ == "__main__":
