@@ -1,0 +1,19 @@
+S -> NP VP : 0.80 | Aux X : 0.15 | Verb NP : 0.01 | V1 PP : 0.005 | Verb PP : 0.0075 | V1 NP : 0.0025 | VP PP : 0.0075
+S -> book : 0.00525 | include : 0.00525 | prefer : 0.007
+X -> NP VP : 1.00
+NP -> Det Nominal : 0.20 | Det Noun : 0.15 | Nominal Noun : 0.03 | Nominal PP : 0.0075
+NP -> i : 0.14 | she : 0.0175 | me : 0.0525 | you : 0.14
+NP -> houston : 0.18 | twa : 0.12
+NP -> book : 0.01125 | flight : 0.03375 | meal : 0.016875 | money : 0.005625 | flights : 0.045 | dinner : 0.01125
+Nominal -> Nominal Noun : 0.20 | Nominal PP : 0.05
+VP -> Verb NP : 0.20 | VX PP : 0.10 | Verb PP : 0.15 | VX NP : 0.05 | VP PP : 0.15
+VP -> book : 0.105 | include : 0.105 | prefer : 0.14
+VX -> Verb NP : 1.00
+PP -> Preposition NP : 1.00
+Det -> that : 0.10 | a : 0.30 | the : 0.60
+Noun -> book : 0.10 | flight : 0.30 | meal : 0.15 | money : 0.05 | flights : 0.40 | dinner : 0.10
+Verb -> book : 0.30 | include : 0.30 | prefer : 0.40
+Pronoun -> i : 0.40 | she : 0.05 | me : 0.15 | you : 0.40
+Proper-Noun -> houston : 0.60 | twa : 0.40
+Aux -> does : 0.60 | can : 0.40
+Preposition -> from : 0.30 | to : 0.30 | on : 0.20 | near : 0.15 | through : 0.05
