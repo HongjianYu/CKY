@@ -49,7 +49,7 @@ def pcky(words: List[str], grammar: Dict[Tuple[str, str], float]):
 
         # init
         for g in grammar:  # g is a tuple of rules or productions, eg. (NP, Det, N) or (N, meals)
-            if words[j] == g[1]:
+            if words[j].lower() == g[1]:
                 table[j-1][j][g[0]] = grammar[g]  # probability
 
         for i in range(j - 2, -1, -1):
