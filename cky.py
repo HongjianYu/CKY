@@ -21,7 +21,6 @@ def cky(words: List[str], grammar: Dict[str, List]):
             for k in range(i+1, j-1):
                 for b in table[i][k]:
                     for c in table[k][j]:
-                        b, c = table[i][k], table[k][j]
                         bc = str(b + ' ' + c) # eg. "Det N"
                         for g in grammar:
                             if bc in grammar[g]:
