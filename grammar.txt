@@ -1,0 +1,9 @@
+"S": ["NP VP", "X1 VP", "book", "include", "prefer", "Verb", "NP", ""]
+
+
+"S": ["A B", "B C"]
+"A": ["B A", "a"]
+"B": ["C C", "b"]
+"C": ["A B", "a"]
+
+[0, 'b', 'a', 'a', 'b', 'a']
