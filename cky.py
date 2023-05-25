@@ -31,26 +31,6 @@ def cky(words: List[str], grammar: Dict[str, List]):
     return table
 
 
-
-def senstence_to_words(sentence: str) -> List:
-    """
-    convert a sentence to a list of words
-    the first element in words doesn't contain info about sentence
-    (can be optimized)
-    """
-    words = []
-    words.append(0) # the first element doesn't contain any word
-
-    word = ""
-    for s in sentence:
-        if s != ' ' and s not in string.punctuation: word += s
-        else:
-            if word != "": words.append(word)
-            word = ""
-
-    return words
-
-
 def pcky(words: List[str], grammar: Dict[Tuple[str, str], float]):
     """
     Ney's variant of the CKY algorithm finds a most probable parse for a phrase or sentence
@@ -63,35 +43,37 @@ def pcky(words: List[str], grammar: Dict[Tuple[str, str], float]):
     table = [[dict() for j in range(len(words))] for i in range(len(words) - 1)]
 
     # for building the parsing tree
-    back = [[set() for j in range(len(words))] for i in range(len(words) - 1)]
+    back = [[dict() for j in range(len(words))] for i in range(len(words) - 1)]
 
     for j in range(1, len(words)):
 
         # init
         for g in grammar:  # g is a tuple of rules or productions, eg. (NP, Det, N) or (N, meals)
             if words[j] == g[1]:
-                table[j-1][j][g[0]] = grammar[g] # probability
+                table[j-1][j][g[0]] = grammar[g]  # probability
 
-        for i in range(j-2, -1, -1):
-            for k in range(i+1, j):
+        for i in range(j - 2, -1, -1):
+            for k in range(i + 1, j):
                 for b in table[i][k]:
                     for c in table[k][j]:
-                        prob_b = table[i][k][b]
-                        prob_c = table[k][j][c]
-                        if prob_b <= 0 or prob_c <= 0: break
-                        for g in grammar:
-                            if g[1] == str(b + " " + c):
-                                if table[i][j].get(g[0]) is None or table[i][j].get(g[0]) < grammar[g] * prob_b * prob_c:
-                                    table[i][j][g[0]] = grammar[g] * prob_b * prob_c
-                                    back[i][j][g[0]] = {k, b, c}
+                        p_b, p_c = table[i][k][b], table[k][j][c]
+                        if p_b > 0 and p_c > 0:
+                            for g in grammar:
+                                if g[1] == str(b + " " + c):
+                                    if table[i][j].get(g[0]) is None or table[i][j].get(g[0]) < grammar[g] * p_b * p_c:
+                                        table[i][j][g[0]] = grammar[g] * p_b * p_c
+                                        back[i][j][g[0]] = {k, b, c}
 
-    return table[1][len(words)-1]
+    # return table[1][len(words)-1]
+    return table
+
 
 def print_table(table: List[List]):
     for i in range(len(table)):
         for j in range(1, len(table[i])):
             print(table[i][j], end=' ')
         print()
+
 
 # the parsing tree
 class Node:
@@ -109,36 +91,36 @@ class Node:
         for i in range(len(self.children)):
             out += f"{self.children[i]}"
         return f"[{out}]"
-'''
-def parse_table(table: List[List]):
-    """
-    table from cky
-    """
-    all_parse = []
-    # start symbols (root)
-    for s in table[0][len(table[0]) - 1]:
-        all_parse.append(Node(s, 0, len(table[0])-1))
-
-def parsing(root: Node, current: Node, table: List[List], grammar: Dict[str, List], all_parse: List):
-    for k in range(current.pos[0]+1, current.pos[1]):
-        L = table[current.pos[0]][k]
-        R = table[k][current.poss[1]]
-        list_all = [] # store all possible expansions
-
-        for l in L:
-            for r in R:
-                if str(l + " " + r) == grammar(current.non_terminal):
-                    list_all.append((l, r))
-
-        for (l, r) in list_all:
-            all_parse.remove(root)
-            current.add_left(Node(l, current.pos[0], k))
-            current.add_right(Node(r, k, current.poss[1]))
-            new_root = copy.deepcopy(root)
-            all_parse.append(new_root)
-            parsing(new_root, current.left, table, grammar, all_parse)
-            parsing(new_root, current.right, table, grammar, all_parse)
-'''
+    '''
+    def parse_table(table: List[List]):
+        """
+        table from cky
+        """
+        all_parse = []
+        # start symbols (root)
+        for s in table[0][len(table[0]) - 1]:
+            all_parse.append(Node(s, 0, len(table[0])-1))
+    
+    def parsing(root: Node, current: Node, table: List[List], grammar: Dict[str, List], all_parse: List):
+        for k in range(current.pos[0]+1, current.pos[1]):
+            L = table[current.pos[0]][k]
+            R = table[k][current.poss[1]]
+            list_all = [] # store all possible expansions
+    
+            for l in L:
+                for r in R:
+                    if str(l + " " + r) == grammar(current.non_terminal):
+                        list_all.append((l, r))
+    
+            for (l, r) in list_all:
+                all_parse.remove(root)
+                current.add_left(Node(l, current.pos[0], k))
+                current.add_right(Node(r, k, current.poss[1]))
+                new_root = copy.deepcopy(root)
+                all_parse.append(new_root)
+                parsing(new_root, current.left, table, grammar, all_parse)
+                parsing(new_root, current.right, table, grammar, all_parse)
+    '''
 
 
 def cfg_to_dict(pcfg):
@@ -151,11 +133,10 @@ def cfg_to_dict(pcfg):
             continue
         lhs, rhs = line.split(" -> ")
         if pcfg:
-            rule_dict = cfg_dict.get(lhs) if cfg_dict.get(lhs) is not None else {}
-            for item in rhs.split(" | "):
-                s, p = item.split(" : ")
-                rule_dict[s] = p
-            cfg_dict[lhs] = rule_dict
+            rhs = [item.split(" : ") for item in rhs.split(" | ")]
+            for item in rhs:
+                rule = (lhs, item[0])
+                cfg_dict[rule] = float(item[1])
         else:
             rhs_list = [item.split(" : ")[0] for item in rhs.split(" | ")]
             if lhs in cfg_dict:
@@ -165,13 +146,35 @@ def cfg_to_dict(pcfg):
     return cfg_dict
 
 
+def senstence_to_words(sentence: str) -> List:
+    """
+    convert a sentence to a list of words
+    the first element in words doesn't contain info about sentence
+    (can be optimized)
+    """
+    words = [None]  # the first element doesn't contain any word
+    word = ""
+    for s in sentence:
+        if s != ' ' and s not in string.punctuation:
+            word += s
+        else:
+            if word != "":
+                words.append(word)
+            word = ""
+    return words
+
+
 def main():
-    cfg_dict = cfg_to_dict(True)
-    print(cfg_dict)
-    sentence = "I book the flight to Houston."
+    use_pcky = True
+    cfg_dict = cfg_to_dict(use_pcky)
+    print(cfg_dict, end="\n\n")
+    sentence = "I book the dinner on the flight to Houston."
     words = senstence_to_words(sentence)
-    print(words)
-    table = pcky(words, cfg_dict)
+    print(words, end="\n\n")
+    if use_pcky:
+        table = pcky(words, cfg_dict)
+    else:
+        table = cky(words, cfg_dict)
     print_table(table)
 
 
