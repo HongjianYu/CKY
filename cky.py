@@ -80,52 +80,46 @@ class Node:
     def __init__(self, non_terminal, i, j):
         self.non_terminal = non_terminal
         self.pos = (i, j)
-        self.children = []
+        self.children = [] # list of Tuple[left, right]
 
-    def add_left(self, child):
+    def add(self, child):
         self.children.append(child)
 
     def __str__(self):
         out = f"{self.non_terminal}"
-        # if the node has the left child, it must have the right child
         for i in range(len(self.children)):
-            out += f"{self.children[i]}"
+            out += f" branch{i + 1}: "
+            out += f"{self.children[i][0]}"
+            out += f"{self.children[i][1]}"
         return f"[{out}]"
-    '''
-    def parse_table(table: List[List]):
-        """
-        table from cky
-        """
-        all_parse = []
-        # start symbols (root)
-        for s in table[0][len(table[0]) - 1]:
-            all_parse.append(Node(s, 0, len(table[0])-1))
-    
-    def parsing(root: Node, current: Node, table: List[List], grammar: Dict[str, List], all_parse: List):
-        for k in range(current.pos[0]+1, current.pos[1]):
-            L = table[current.pos[0]][k]
-            R = table[k][current.poss[1]]
-            list_all = [] # store all possible expansions
-    
-            for l in L:
-                for r in R:
-                    if str(l + " " + r) == grammar(current.non_terminal):
-                        list_all.append((l, r))
-    
-            for (l, r) in list_all:
-                all_parse.remove(root)
-                current.add_left(Node(l, current.pos[0], k))
-                current.add_right(Node(r, k, current.poss[1]))
-                new_root = copy.deepcopy(root)
-                all_parse.append(new_root)
-                parsing(new_root, current.left, table, grammar, all_parse)
-                parsing(new_root, current.right, table, grammar, all_parse)
-    '''
 
+def parse_table(table: List[List], grammar: Dict[str, List]):
+    """
+    table from cky
+    """
+    roots = []
+    # start symbols (root)
+    for s in table[0][len(table[0]) - 1]:
+        roots.append(Node(s, 0, len(table[0])-1))
+        parsing(roots[-1], table, grammar)
+
+    return roots
+
+def parsing(root: Node, table: List[List], grammar: Dict[str, List]):
+    for k in range(root.pos[0]+1, root.pos[1]):
+        L = table[root.pos[0]][k]
+        R = table[k][root.pos[1]]
+
+        for l in L:
+            for r in R:
+                if str(l + " " + r) in grammar[root.non_terminal]:
+                    root.add((Node(l, root.pos[0], k), Node(r, k, root.pos[1])))
+                    parsing(root.children[-1][0], table, grammar)
+                    parsing(root.children[-1][1], table, grammar)
 
 def cfg_to_dict(pcfg):
     cfg_dict = {}
-    cfg_data = open("pcfg.txt")
+    cfg_data = open("grammar.txt")
     cfg_lines = cfg_data.readlines()
     for line in cfg_lines:
         line = line.strip()
@@ -165,7 +159,7 @@ def senstence_to_words(sentence: str) -> List:
 
 
 def main():
-    use_pcky = True
+    use_pcky = False
     cfg_dict = cfg_to_dict(use_pcky)
     print(cfg_dict, end="\n\n")
     sentence = "I book the dinner on the flight to Houston."
@@ -174,9 +168,12 @@ def main():
     if use_pcky:
         table = pcky(words, cfg_dict)
     else:
-        table = cky(words, cfg_dict)
+        table = cky([0, 'b', 'a', 'a', 'b', 'a'], cfg_dict)
     print_table(table)
 
+    roots = parse_table(cky([0, 'b', 'a', 'a', 'b', 'a'], cfg_dict), cfg_dict)
+    for root in roots:
+        print(root)
 
 if __name__ == "__main__":
     main()
