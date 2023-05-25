@@ -37,8 +37,7 @@ def senstence_to_words(sentence: str) -> List:
     the first element in words doesn't contain info about sentence
     (can be optimized)
     """
-    words = []
-    words.append(0) # the first element doesn't contain any word
+    words = [0] # the first element doesn't contain any word
 
     word = ""
     for s in sentence:
@@ -97,47 +96,43 @@ class Node:
     def __init__(self, non_terminal, i, j):
         self.non_terminal = non_terminal
         self.pos = (i, j)
-        self.children = []
+        self.children = [] # list of Tuple[left, right]
 
-    def add_left(self, child):
+    def add(self, child):
         self.children.append(child)
 
     def __str__(self):
         out = f"{self.non_terminal}"
-        # if the node has the left child, it must have the right child
         for i in range(len(self.children)):
-            out += f"{self.children[i]}"
+            out += f" branch{i + 1}: "
+            out += f"{self.children[i][0]}"
+            out += f"{self.children[i][1]}"
         return f"[{out}]"
-'''
-def parse_table(table: List[List]):
+
+def parse_table(table: List[List], grammar: Dict[str, List]):
     """
     table from cky
     """
-    all_parse = []
+    roots = []
     # start symbols (root)
     for s in table[0][len(table[0]) - 1]:
-        all_parse.append(Node(s, 0, len(table[0])-1))
+        roots.append(Node(s, 0, len(table[0])-1))
+        parsing(roots[-1], table, grammar)
 
-def parsing(root: Node, current: Node, table: List[List], grammar: Dict[str, List], all_parse: List):
-    for k in range(current.pos[0]+1, current.pos[1]):
-        L = table[current.pos[0]][k]
-        R = table[k][current.poss[1]]
-        list_all = [] # store all possible expansions
+    return roots
+
+def parsing(root: Node, table: List[List], grammar: Dict[str, List]):
+    for k in range(root.pos[0]+1, root.pos[1]):
+        L = table[root.pos[0]][k]
+        R = table[k][root.pos[1]]
 
         for l in L:
             for r in R:
-                if str(l + " " + r) == grammar(current.non_terminal):
-                    list_all.append((l, r))
+                if str(l + " " + r) in grammar[root.non_terminal]:
+                    root.add((Node(l, root.pos[0], k), Node(r, k, root.pos[1])))
+                    parsing(root.children[-1][0], table, grammar)
+                    parsing(root.children[-1][1], table, grammar)
 
-        for (l, r) in list_all:
-            all_parse.remove(root)
-            current.add_left(Node(l, current.pos[0], k))
-            current.add_right(Node(r, k, current.poss[1]))
-            new_root = copy.deepcopy(root)
-            all_parse.append(new_root)
-            parsing(new_root, current.left, table, grammar, all_parse)
-            parsing(new_root, current.right, table, grammar, all_parse)
-'''
 
 def main():
     grammar = { "S": ["A B", "B C"],
@@ -148,6 +143,9 @@ def main():
     words = [0, 'b', 'a', 'a', 'b', 'a']
 
     print_table(cky(words, grammar))
+    roots = parse_table(cky(words, grammar), grammar)
+    for root in roots:
+        print(root)
 
 if __name__ == "__main__":
     main()
